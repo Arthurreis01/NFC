@@ -21,19 +21,24 @@ cadastro_df['Código1'] = cadastro_df['Código1'].astype(str).str.strip()
 # Configurar a interface do Streamlit
 st.title("Sistema de Registro de Tempo")
 
-# Inicializar o session_state para o código1
-if 'codigo1' not in st.session_state:
-    st.session_state.codigo1 = ''
+# Inicializar o session_state para o código1 e o horário de largada
+if 'Código1' not in st.session_state:
+    st.session_state.Código1 = ''
+if 'horario_largada' not in st.session_state:
+    st.session_state.horario_largada = "08:00:00"  # Valor padrão
 
 # Campo para o Código1 (via NFC ou manual)
-codigo1 = st.text_input("Código do Atleta (via NFC ou Manual)", "").strip()
+Código1 = st.text_input("Código do Atleta (via NFC ou Manual)", "").strip()
+
+# Campo para o horário de largada
+horario_largada = st.text_input("Horário de Largada (HH:MM:SS)", st.session_state.horario_largada).strip()
 
 # Detectar quando o usuário pressionar Enter e registrar automaticamente
-if codigo1:
+if Código1 and horario_largada:
     start_time = time.time()  # Marcar o início do processo
 
     # Verificar se o código existe na planilha de cadastro
-    atleta_info = cadastro_df[cadastro_df['Código1'] == codigo1]
+    atleta_info = cadastro_df[cadastro_df['Código1'] == Código1]
     
     if not atleta_info.empty:
         # Capturar os dados do atleta
@@ -45,9 +50,9 @@ if codigo1:
         # Capturar o horário atual no fuso horário de Brasília
         inicio = datetime.now(brasilia_tz).strftime("%H:%M:%S")
         
-        # Calcular o tempo decorrido desde o horário de largada (08:00:00)
-        horario_largada = datetime.strptime("08:00:00", "%H:%M:%S").replace(tzinfo=brasilia_tz)
-        tempo_decorrido = datetime.strptime(inicio, "%H:%M:%S").replace(tzinfo=brasilia_tz) - horario_largada
+        # Calcular o tempo decorrido desde o horário de largada informado
+        horario_largada_dt = datetime.strptime(horario_largada, "%H:%M:%S").replace(tzinfo=brasilia_tz)
+        tempo_decorrido = datetime.strptime(inicio, "%H:%M:%S").replace(tzinfo=brasilia_tz) - horario_largada_dt
 
         # Ajustar o tempo decorrido para evitar resultados negativos
         if tempo_decorrido.days < 0:
@@ -58,20 +63,21 @@ if codigo1:
 
         # Criar uma nova linha com os dados do atleta e o tempo decorrido
         novo_registro = pd.DataFrame({
-            "Código1": [codigo1],
+            "Código1": [Código1],
             "Nome": [nome],
             "Categoria": [categoria],
             "Sexo": [sexo],
             "Inicio": [inicio],
             "Tempo Decorrido": [tempo_decorrido_formatado],
-            "Modalidade": [modalidade]
+            "Modalidade": [modalidade],
+            "Horário de Largada": [horario_largada]
         })
         
         # Verificar se o arquivo Excel já existe
         try:
             resultados_df = pd.read_excel('resultados.xlsx')
         except FileNotFoundError:
-            resultados_df = pd.DataFrame(columns=["Código1", "Nome", "Categoria", "Sexo", "Inicio", "Tempo Decorrido", "Modalidade"])
+            resultados_df = pd.DataFrame(columns=["Código1", "Nome", "Categoria", "Sexo", "Inicio", "Tempo Decorrido", "Modalidade", "Horário de Largada"])
         
         # Adicionar a nova linha ao DataFrame existente usando concat
         resultados_df = pd.concat([resultados_df, novo_registro], ignore_index=True)
@@ -86,10 +92,11 @@ if codigo1:
         end_time = time.time()  # Marcar o fim do processo
         execution_time = end_time - start_time  # Calcular o tempo de execução
 
-        st.success(f"Tempo registrado com sucesso! (Tempo de execução: {execution_time:.2f} segundos)")
+        st.success(f"Tempo registrado com sucesso! Tempo de execução: {execution_time:.2f} segundos")
         
         # Limpar o campo de entrada após o registro
-        st.session_state.codigo1 = ''  # Limpar o campo após registro
+        st.session_state.Código1 = ''  # Limpar o campo após registro
+        st.session_state.horario_largada = "08:00:00"  # Resetar o horário de largada para o valor padrão
 
 
 # Exibir a planilha atualizada
@@ -108,7 +115,7 @@ if os.path.exists('resultados.xlsx'):
         )
 
 # Definir as colunas da planilha
-colunas = ["Código1", "Nome", "Categoria", "Sexo", "Inicio", "Tempo Decorrido", "Modalidade"]
+colunas = ["Código1", "Nome", "Categoria", "Sexo", "Inicio", "Tempo Decorrido", "Modalidade", "Horário de Largada"]
 
 # Botão para resetar os dados
 if st.button('Resetar Dados'):
