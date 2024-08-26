@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 import pytz
+import time
 
 # Definir o fuso horário de Brasília
 brasilia_tz = pytz.timezone('America/Sao_Paulo')
@@ -29,6 +30,8 @@ codigo1 = st.text_input("Código do Atleta (via NFC ou Manual)", "").strip()
 
 # Detectar quando o usuário pressionar Enter e registrar automaticamente
 if codigo1:
+    start_time = time.time()  # Marcar o início do processo
+
     # Verificar se o código existe na planilha de cadastro
     atleta_info = cadastro_df[cadastro_df['Codigo1'] == codigo1]
     
@@ -79,8 +82,11 @@ if codigo1:
         
         # Substituir o arquivo original
         os.replace(resultados_temp_file, 'resultados.xlsx')
-        
-        st.success("Tempo registrado com sucesso!")
+
+        end_time = time.time()  # Marcar o fim do processo
+        execution_time = end_time - start_time  # Calcular o tempo de execução
+
+        st.success(f"Tempo registrado com sucesso! (Tempo de execução: {execution_time:.2f} segundos)")
         
         # Limpar o campo de entrada após o registro
         st.session_state.codigo1 = ''  # Limpar o campo após registro
