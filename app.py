@@ -2,8 +2,16 @@ import os
 import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
+import pytz
+
+# Definir o fuso horário de Brasília
+brasilia_tz = pytz.timezone('America/Sao_Paulo')
 
 # Carregar a planilha de cadastro dos atletas
+if not os.path.exists('nfcteste.xlsx'):
+    df_vazio = pd.DataFrame(columns=["Código1", "Código2", "Nome", "Categoria", "Sexo", "Modalidade"])
+    df_vazio.to_excel('nfcteste.xlsx', index=False)
+
 cadastro_df = pd.read_excel('nfcteste.xlsx')
 
 # Garantir que todos os valores na coluna 'Codigo1' estejam como strings e sem espaços extras
@@ -31,12 +39,12 @@ if codigo1:
         sexo = atleta_info.iloc[0]['Sexo']
         modalidade = atleta_info.iloc[0]['Modalidade']
         
-        # Capturar o horário atual (Início da prova)
-        inicio = datetime.now().strftime("%H:%M:%S")
+        # Capturar o horário atual no fuso horário de Brasília
+        inicio = datetime.now(brasilia_tz).strftime("%H:%M:%S")
         
-        # Calcular o tempo decorrido desde o horário de largada (12:00:00)
-        horario_largada = datetime.strptime("08:00:00", "%H:%M:%S")
-        tempo_decorrido = datetime.strptime(inicio, "%H:%M:%S") - horario_largada
+        # Calcular o tempo decorrido desde o horário de largada (08:00:00)
+        horario_largada = datetime.strptime("08:00:00", "%H:%M:%S").replace(tzinfo=brasilia_tz)
+        tempo_decorrido = datetime.strptime(inicio, "%H:%M:%S").replace(tzinfo=brasilia_tz) - horario_largada
 
         # Ajustar o tempo decorrido para evitar resultados negativos
         if tempo_decorrido.days < 0:
@@ -105,8 +113,3 @@ if st.button('Resetar Dados'):
     resultados_df.to_excel('resultados.xlsx', index=False)
     
     st.success("Todos os dados foram resetados com sucesso!")
-
-if not os.path.exists('nfcteste.xlsx'):
-    # Criar um arquivo Excel vazio com as colunas necessárias
-    df_vazio = pd.DataFrame(columns=["Código1", "Código2", "Nome", "Categoria", "Sexo", "Modalidade"])
-    df_vazio.to_excel('nfcteste.xlsx', index=False)
