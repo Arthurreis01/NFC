@@ -15,8 +15,8 @@ if not os.path.exists('nfcteste.xlsx'):
 
 cadastro_df = pd.read_excel('nfcteste.xlsx')
 
-# Garantir que todos os valores na coluna 'Codigo1' estejam como strings e sem espaços extras
-cadastro_df['Codigo1'] = cadastro_df['Codigo1'].astype(str).str.strip()
+# Garantir que todos os valores na coluna 'Código1' estejam como strings e sem espaços extras
+cadastro_df['Código1'] = cadastro_df['Código1'].astype(str).str.strip()
 
 # Configurar a interface do Streamlit
 st.title("Sistema de Registro de Tempo")
@@ -33,7 +33,7 @@ if codigo1:
     start_time = time.time()  # Marcar o início do processo
 
     # Verificar se o código existe na planilha de cadastro
-    atleta_info = cadastro_df[cadastro_df['Codigo1'] == codigo1]
+    atleta_info = cadastro_df[cadastro_df['Código1'] == codigo1]
     
     if not atleta_info.empty:
         # Capturar os dados do atleta
