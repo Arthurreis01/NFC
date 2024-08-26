@@ -1,9 +1,52 @@
-import os
-import pandas as pd
 import streamlit as st
+import pandas as pd
+import os
 from datetime import datetime, timedelta
 import pytz
 import time
+
+# Estilização básica do aplicativo
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f5f5f5;
+        font-family: 'Arial', sans-serif;
+    }
+    .main-title {
+        font-size: 2.5em;
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .stTextInput > div > div > input {
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+        padding: 10px;
+        font-size: 1.2em;
+    }
+    .stButton > button {
+        background-color: #27ae60;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1.1em;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+    }
+    .stButton > button:hover {
+        background-color: #2ecc71;
+    }
+    .stDataFrame {
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+print("Iniciando o aplicativo...")  # Log de depuração
 
 # Definir o fuso horário de Brasília
 brasilia_tz = pytz.timezone('America/Sao_Paulo')
@@ -19,7 +62,7 @@ cadastro_df = pd.read_excel('nfcteste.xlsx')
 cadastro_df['Código1'] = cadastro_df['Código1'].astype(str).str.strip()
 
 # Configurar a interface do Streamlit
-st.title("Sistema de Registro de Tempo")
+st.markdown("<div class='main-title'>Sistema de Registro de Tempo</div>", unsafe_allow_html=True)
 
 # Inicializar o session_state para o código1 e o horário de largada
 if 'Código1' not in st.session_state:
@@ -27,15 +70,10 @@ if 'Código1' not in st.session_state:
 if 'horario_largada' not in st.session_state:
     st.session_state.horario_largada = "08:00:00"  # Valor padrão
 
-# Campo para o Código1 (via NFC ou manual)
-Código1 = st.text_input("Código do Atleta (via NFC ou Manual)", "").strip()
-
-# Campo para o horário de largada
-horario_largada = st.text_input("Horário de Largada (HH:MM:SS)", st.session_state.horario_largada).strip()
-
-# Detectar quando o usuário pressionar Enter e registrar automaticamente
-if Código1 and horario_largada:
+def registrar_tempo():
     start_time = time.time()  # Marcar o início do processo
+    Código1 = st.session_state.Código1
+    horario_largada = st.session_state.horario_largada
 
     # Verificar se o código existe na planilha de cadastro
     atleta_info = cadastro_df[cadastro_df['Código1'] == Código1]
@@ -93,17 +131,24 @@ if Código1 and horario_largada:
         execution_time = end_time - start_time  # Calcular o tempo de execução
 
         st.success(f"Tempo registrado com sucesso! Tempo de execução: {execution_time:.2f} segundos")
-        
-        # Limpar o campo de entrada após o registro
-        st.session_state.Código1 = ''  # Limpar o campo após registro
-        st.session_state.horario_largada = "08:00:00"  # Resetar o horário de largada para o valor padrão
 
+        # Limpar o campo Código1 após o registro, mantendo o horário de largada
+        st.session_state.Código1 = ''
+    else:
+        st.error("Código do atleta não encontrado. Por favor, verifique o código e tente novamente.")
+        st.session_state.Código1 = ''
+
+# Campo para o Código1 (via NFC ou manual)
+st.text_input("Código do Atleta (via NFC ou Manual)", value=st.session_state.Código1, key='Código1', on_change=registrar_tempo)
+
+# Campo para o horário de largada, mantendo-o estático
+st.text_input("Horário de Largada (HH:MM:SS)", value=st.session_state.horario_largada, key='horario_largada')
 
 # Exibir a planilha atualizada
 if os.path.exists('resultados.xlsx'):
     resultados_df = pd.read_excel('resultados.xlsx')
     st.write("Planilha Atualizada:")
-    st.dataframe(resultados_df)
+    st.dataframe(resultados_df, use_container_width=True)
 
     # Adicionar botão de download
     with open("resultados.xlsx", "rb") as file:
