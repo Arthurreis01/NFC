@@ -21,7 +21,7 @@ cadastro_df = pd.read_excel('nfcteste.xlsx')
 cadastro_df['Código1'] = cadastro_df['Código1'].astype(str).str.strip()
 
 # Configurar a interface do Streamlit
-st.markdown("<div class='main-title'>Sistema de Registro de Tempo</div>", unsafe_allow_html=True)
+st.title("Sistema de Registro de Tempo")
 
 # Inicializar o session_state para o código1 e o horário de largada
 if 'Código1' not in st.session_state:
