@@ -5,47 +5,6 @@ from datetime import datetime, timedelta
 import pytz
 import time
 
-# Estilização básica do aplicativo
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background-color: #f5f5f5;
-        font-family: 'Arial', sans-serif;
-    }
-    .main-title {
-        font-size: 2.5em;
-        color: #2c3e50;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .stTextInput > div > div > input {
-        background-color: #ffffff;
-        border: 1px solid #cccccc;
-        padding: 10px;
-        font-size: 1.2em;
-    }
-    .stButton > button {
-        background-color: #27ae60;
-        color: white;
-        padding: 10px 20px;
-        font-size: 1.1em;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-    }
-    .stButton > button:hover {
-        background-color: #2ecc71;
-    }
-    .stDataFrame {
-        border: 1px solid #cccccc;
-        border-radius: 5px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 print("Iniciando o aplicativo...")  # Log de depuração
 
 # Definir o fuso horário de Brasília
